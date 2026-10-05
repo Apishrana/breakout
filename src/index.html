@@ -94,7 +94,7 @@
             G6: 1567.98,
             C7: 2093.0,
         };
-        function createHoleRow(parent, notes, row) {
+        const createHoleRow = (parent, notes, row) => {
             n = 1;
             for (i in notes) {
                 const hole = document.createElement('div');
@@ -106,8 +106,26 @@
                 parent.appendChild(hole);
                 n++;
             }
-        }
+        };
         createHoleRow(document.querySelector('#suck'), suckNotes, 'suck');
         createHoleRow(document.querySelector('#blow'), blowNotes, 'blow');
+
+        const startNote = (hole) => {};
+        const stopNote = (hole) => {};
+
+        document.querySelectorAll('hole').forEach((hole) => {
+            hole.addEventListener('pointerDown', (e) => {
+                e.preventDefault();
+                hole.setPointerCapture(e.pointerId);
+                startNote();
+            });
+            hole.addEventListener('pointerup', stopNote);
+            hole.addEventListener('pointercancel', stopNote);
+            hole.addEventListener('pointerleave', (e) => {
+                if (e.buttons != 0) {
+                    stopNote();
+                }
+            });
+        });
     </script>
 </body>
