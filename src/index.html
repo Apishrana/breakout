@@ -94,26 +94,82 @@
             G6: 1567.98,
             C7: 2093.0,
         };
-        const createHoleRow = (parent, notes, row) => {
+        const createHoleRow = (parent, notes) => {
             n = 1;
             for (i in notes) {
                 const hole = document.createElement('div');
                 hole.className = 'hole';
                 hole.innerHTML = `<strong>${n}</strong><small>${i}</small>`;
                 hole.dataset.frequency = notes[i];
-                hole.dataset.name = i;
-                hole.dataset.type = row;
                 parent.appendChild(hole);
                 n++;
             }
         };
-        createHoleRow(document.querySelector('#suck'), suckNotes, 'suck');
-        createHoleRow(document.querySelector('#blow'), blowNotes, 'blow');
+        createHoleRow(document.querySelector('#suck'), suckNotes);
+        createHoleRow(document.querySelector('#blow'), blowNotes);
 
         const startNote = (hole) => {
+            if (active) {
+                stopNote();
+            }
+            if (!audio) {
+                new AudioContext();
+            }
+            if (audio.state === 'suspended') {
+                audio.resume();
+            }
+            const frequency = Number(hole.dataset.frequency);
+            const now = audio.currentTime;
+
+            const read = audio.createOscillator();
+            read.type = 'sawtooth';
+            read.frequency.value = frequency;
+
+            const read2 = audio.createOscillator();
+            read2.type = 'square';
+            read2.frequency.value = frequency * 2;
+            read2.detune.value = -7;
+
+            const filter = audio.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = Math.min(3500, frequency * 7);
+            frequency.O.value = 1.5;
+
+            const gain = audio.createGain();
+            read.connect(filter);
+            read2.connect(filter);
+            filter.connect(gain);
+            gain.connect(audio.destination);
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.exponentialRampToValueAtTime(0.22, now + 0.035);
+            read.start(now);
+            read2.start(now);
+
+            active = {
+                hole,
+                read,
+                read2,
+                gain,
+            };
+
             hole.classList.add('playing');
         };
-        const stopNote = () => {};
+        const stopNote = () => {
+            if (!active) return;
+
+            const now = audio.currentTime;
+            active.gain.gain.cancelScheduledValues(now);
+            active.gain.gain.setValueAtTime(0.001, now, 0.04);
+            const old = active;
+
+            setTimeout(() => {
+                old.read.stop();
+                old.read2.stop();
+            }, 150);
+
+            old.hole.classList.remove('playing');
+            active = null;
+        };
 
         document.querySelectorAll('.hole').forEach((hole) => {
             hole.addEventListener('pointerdown', (e) => {
