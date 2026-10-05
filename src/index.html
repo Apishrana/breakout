@@ -113,7 +113,7 @@
                 stopNote();
             }
             if (!audio) {
-                new AudioContext();
+                audio = new AudioContext();
             }
             if (audio.state === 'suspended') {
                 audio.resume();
@@ -133,7 +133,7 @@
             const filter = audio.createBiquadFilter();
             filter.type = 'lowpass';
             filter.frequency.value = Math.min(3500, frequency * 7);
-            frequency.O.value = 1.5;
+            filter.Q.value = 1.5;
 
             const gain = audio.createGain();
             read.connect(filter);
@@ -159,7 +159,7 @@
 
             const now = audio.currentTime;
             active.gain.gain.cancelScheduledValues(now);
-            active.gain.gain.setValueAtTime(0.001, now, 0.04);
+            active.gain.gain.setTargetAtTime(0.001, now, 0.04);
             const old = active;
 
             setTimeout(() => {
