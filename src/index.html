@@ -52,7 +52,7 @@
             margin-top: 5px;
             color: #777;
         }
-        .hole .playing {
+        .playing {
             background-color: #777;
             color: white;
             transform: scale(0.95);
@@ -110,14 +110,16 @@
         createHoleRow(document.querySelector('#suck'), suckNotes, 'suck');
         createHoleRow(document.querySelector('#blow'), blowNotes, 'blow');
 
-        const startNote = (hole) => {};
-        const stopNote = (hole) => {};
+        const startNote = (hole) => {
+            hole.classList.add('playing');
+        };
+        const stopNote = () => {};
 
         document.querySelectorAll('.hole').forEach((hole) => {
-            hole.addEventListener('pointerDown', (e) => {
+            hole.addEventListener('pointerdown', (e) => {
                 e.preventDefault();
                 hole.setPointerCapture(e.pointerId);
-                startNote();
+                startNote(hole);
             });
             hole.addEventListener('pointerup', stopNote);
             hole.addEventListener('pointercancel', stopNote);
